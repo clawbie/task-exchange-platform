@@ -61,8 +61,8 @@ MVP 阶段，任务只声明 5 个调度属性：
 - Web 页面：Jinja2 + HTMX
 - 数据库：PostgreSQL
 - 文件存储：先用本地磁盘，后续可切到 MinIO
-- 反向代理：Caddy
-- 部署方式：VPS 上使用 Docker Compose
+- 反向代理：VPS 上已有的 Caddy 或 Nginx
+- 部署方式：Docker Compose 运行 `app + db`
 
 ## 当前已支持的流程
 
@@ -78,8 +78,20 @@ MVP 阶段，任务只声明 5 个调度属性：
 - 测试环境：会显式打开 `AUTO_INIT_DB=true`
 - 正式部署：推荐先执行 `alembic upgrade head`
 - 容器启动：`Dockerfile` 已配置自动执行迁移后再启动应用
+- Compose 默认只启动 `app + db`
+- 应用只绑定到宿主机 `127.0.0.1:8000`
+- 建议由 VPS 上已有的 Caddy 或 Nginx 反代到 `127.0.0.1:8000`
 - 健康检查：`/healthz`
 - 就绪检查：`/readyz`
+
+宿主机 Caddy 最小示例：
+
+```caddyfile
+tasks.example.com {
+  encode gzip
+  reverse_proxy 127.0.0.1:8000
+}
+```
 
 ## 下一步开发建议
 

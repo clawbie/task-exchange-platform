@@ -3,6 +3,8 @@ services:
     build:
       context: ..
       dockerfile: Dockerfile
+    ports:
+      - "127.0.0.1:8000:8000"
     environment:
       APP_NAME: Task Exchange Platform
       APP_ENV: production
@@ -36,16 +38,6 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-
-  caddy:
-    image: caddy:2
-    ports:
-      - "80:80"
-    volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile:ro
-    depends_on:
-      app:
-        condition: service_healthy
 
 volumes:
   postgres-data:

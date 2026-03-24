@@ -19,8 +19,8 @@
 - ORM 与迁移：SQLAlchemy + Alembic
 - 数据库：PostgreSQL
 - 文件存储：先做本地磁盘抽象，后续可替换
-- 反向代理与 HTTPS：Caddy
-- 部署方式：Docker Compose
+- 反向代理与 HTTPS：宿主机已有的 Caddy 或 Nginx
+- 部署方式：Docker Compose 运行 `app + db`
 
 这套组合的原因：
 
@@ -59,7 +59,6 @@ task-exchange-platform/
   tests/
   deploy/
     docker-compose.yml
-    Caddyfile
 ```
 
 ## 4. 核心领域模型
@@ -314,17 +313,28 @@ uvicorn app.main:app --reload
 
 - FastAPI 应用容器
 - PostgreSQL 容器
-- Caddy 容器
 - 持久化挂载卷，用于 `data/`
+
+反向代理不再由本仓库内置提供。Compose 会把应用绑定到 VPS 宿主机
+`127.0.0.1:8000`，再由你机器上已有的 Caddy 或 Nginx 转发进去。
 
 最小部署建议：
 
 - 开启 HTTPS
-- 应用端口仅对反代开放
+- 应用端口仅对宿主机反代开放
 - 备份 PostgreSQL 和文件目录
 - 所有密钥和配置都放环境变量，不写入 Git
 - 生产环境设置 `AUTO_INIT_DB=false`
 - 容器启动前执行 `alembic upgrade head`
+
+宿主机 Caddy 最小示例：
+
+```caddyfile
+tasks.example.com {
+  encode gzip
+  reverse_proxy 127.0.0.1:8000
+}
+```
 
 ## 13. 安全检查清单
 

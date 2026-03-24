@@ -20,8 +20,8 @@ The implementation priority is:
 - ORM and migrations: SQLAlchemy + Alembic
 - Database: PostgreSQL
 - File storage: local disk abstraction, replaceable later
-- Reverse proxy and TLS: Caddy
-- Deployment: Docker Compose
+- Reverse proxy and TLS: existing host-level Caddy or Nginx
+- Deployment: Docker Compose for `app + db`
 
 Why this stack:
 
@@ -57,7 +57,6 @@ task-exchange-platform/
   tests/
   deploy/
     docker-compose.yml
-    Caddyfile
 ```
 
 ## 4. Core Domain Model
@@ -308,17 +307,29 @@ Recommended single-node deployment:
 
 - FastAPI app container
 - PostgreSQL container
-- Caddy container
 - mounted persistent volume for `data/`
+
+The reverse proxy is expected to live outside this repository. The Compose file
+binds the application to `127.0.0.1:8000` on the VPS so an existing host Caddy
+or Nginx can proxy to it.
 
 Minimum initial deployment guidance:
 
 - use HTTPS
-- keep app port private behind Caddy
+- keep app port private behind the host reverse proxy
 - back up PostgreSQL and file storage
 - store secrets in environment variables, not in git
 - keep `AUTO_INIT_DB=false` in production
 - run `alembic upgrade head` before serving traffic
+
+Minimal host Caddy example:
+
+```caddyfile
+tasks.example.com {
+  encode gzip
+  reverse_proxy 127.0.0.1:8000
+}
+```
 
 ## 13. Security Checklist
 
