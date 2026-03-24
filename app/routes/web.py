@@ -202,5 +202,10 @@ def agent_runbook_page(request: Request):
     return templates.TemplateResponse(request, "agent_runbook.html", {"request": request})
 
 
+@router.get("/agent/discovery")
+def agent_discovery_page(request: Request):
+    return templates.TemplateResponse(request, "agent_discovery.html", {"request": request})
+
+
 def _split_lines(value: str) -> list[str]:
     return [line.strip() for line in value.splitlines() if line.strip()]
