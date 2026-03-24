@@ -1,7 +1,8 @@
 from pathlib import Path
 from typing import Generator
 
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session, sessionmaker
 
 from app.config import get_settings
@@ -28,6 +29,10 @@ SessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False, expi
 def init_db() -> None:
     import app.models  # noqa: F401
 
+    Path(settings.storage_root).mkdir(parents=True, exist_ok=True)
+    if not settings.auto_init_db:
+        return
+
     Base.metadata.create_all(bind=engine)
 
 
@@ -37,3 +42,11 @@ def get_session() -> Generator[Session, None, None]:
         yield session
     finally:
         session.close()
+
+
+def check_database_connection() -> None:
+    try:
+        with engine.connect() as connection:
+            connection.execute(text("SELECT 1"))
+    except SQLAlchemyError as exc:  # pragma: no cover - exercised through API tests
+        raise RuntimeError("Database is not ready") from exc

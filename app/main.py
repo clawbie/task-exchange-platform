@@ -6,7 +6,7 @@ from fastapi.staticfiles import StaticFiles
 
 from app.config import get_settings
 from app.db import init_db
-from app.routes import api_actors, api_files, api_tasks, web
+from app.routes import api_actors, api_files, api_tasks, system, web
 
 
 settings = get_settings()
@@ -31,6 +31,7 @@ app.mount(
 )
 
 app.include_router(web.router)
+app.include_router(system.router)
 app.include_router(api_tasks.router)
 app.include_router(api_files.router)
 app.include_router(api_actors.router)

@@ -5,14 +5,23 @@ services:
       dockerfile: Dockerfile
     environment:
       APP_NAME: Task Exchange Platform
+      APP_ENV: production
       DEBUG: "false"
       DATABASE_URL: postgresql+psycopg://taskhub:taskhub@db:5432/taskhub
       STORAGE_ROOT: /app/data/files
       MAX_UPLOAD_SIZE_MB: "100"
+      AUTO_INIT_DB: "false"
     volumes:
       - ../data:/app/data
     depends_on:
-      - db
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/healthz')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
 
   db:
     image: postgres:17
@@ -22,6 +31,11 @@ services:
       POSTGRES_PASSWORD: taskhub
     volumes:
       - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U taskhub -d taskhub"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   caddy:
     image: caddy:2
@@ -30,7 +44,8 @@ services:
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
     depends_on:
-      - app
+      app:
+        condition: service_healthy
 
 volumes:
   postgres-data:

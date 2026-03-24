@@ -12,9 +12,11 @@ class Settings(BaseSettings):
 
     app_name: str = "Task Exchange Platform"
     debug: bool = True
+    app_env: str = "development"
     database_url: str = "sqlite:///./data/dev.db"
     storage_root: str = "./data/files"
     max_upload_size_mb: int = 100
+    auto_init_db: bool = False
 
 
 @lru_cache

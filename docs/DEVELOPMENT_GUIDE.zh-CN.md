@@ -264,48 +264,49 @@ data/
 
 ## 10. 开发里程碑
 
-### 里程碑 1：文档与数据模型
+### 当前已完成
 
-- 定稿 manifest 契约
+- 定稿一版 manifest 契约
 - 建立 SQLAlchemy 模型
-- 添加 Alembic 迁移
+- 打通任务创建、领取、进度、提交、审核主链路
+- 增加 Web 页面与 Agent API Key
+- 增加 Alembic 迁移和健康检查
 
-### 里程碑 2：Task 与 Actor API
+### 下一阶段建议
 
-- 创建 Actor
-- 创建任务
-- 列出任务
-- 领取任务
-
-### 里程碑 3：文件上传与结果提交
-
-- 上传任务附件
-- 上传交付物
-- 下载文件
-
-### 里程碑 4：Web UI
-
-- 任务列表页
-- 任务详情页
-- 新建任务页
-- Actor 页面
-
-### 里程碑 5：审核与运维能力
-
-- 批准与驳回流程
-- 事件日志可视化
-- 心跳与超时回收
+- 强化 manifest schema 校验和版本化
+- 细化登录与权限控制
+- 增强运维可观测性
+- 补齐 PostgreSQL 生产配置说明
 
 ## 11. 本地开发流程
 
 建议本地开发循环：
 
 1. 启动 PostgreSQL
-2. 执行数据库迁移
+2. 执行数据库迁移：`alembic upgrade head`
 3. 以热重载方式启动 FastAPI
 4. 上传一个示例任务包
 5. 通过 API 完成领取与提交
 6. 在浏览器中验证任务页面和文件下载
+
+推荐命令：
+
+```bash
+pip install -r requirements.txt
+alembic upgrade head
+uvicorn app.main:app --reload
+```
+
+配置建议：
+
+- 默认 `AUTO_INIT_DB=false`
+- 测试环境显式设置 `AUTO_INIT_DB=true`
+
+健康检查接口：
+
+- `GET /healthz`
+- `GET /readyz`
 
 ## 12. VPS 部署说明
 
@@ -322,6 +323,8 @@ data/
 - 应用端口仅对反代开放
 - 备份 PostgreSQL 和文件目录
 - 所有密钥和配置都放环境变量，不写入 Git
+- 生产环境设置 `AUTO_INIT_DB=false`
+- 容器启动前执行 `alembic upgrade head`
 
 ## 13. 安全检查清单
 
@@ -356,7 +359,7 @@ MVP 必须覆盖的测试：
 
 建议按这个顺序开始编码：
 
-1. 定义 `manifest.yaml` schema
-2. 建立数据库表
-3. 搭好 FastAPI 应用骨架
-4. 先实现任务创建与任务列表接口
+1. 强化 manifest schema 校验和版本管理
+2. 增加更细的登录与权限控制
+3. 完善 PostgreSQL 生产配置说明
+4. 扩展运维观测与任务筛选能力

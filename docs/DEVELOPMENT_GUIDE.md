@@ -261,50 +261,46 @@ Implement a package parser service that:
 
 Do not mix parsing logic into route handlers.
 
-## 10. Development Milestones
+## 10. Development Status
 
-### Milestone 1: Documentation And Schema
+### Completed
 
-- finalize manifest contract
+- draft the manifest contract
 - create SQLAlchemy models
-- add Alembic migration
+- ship the task creation, claim, progress, submit, and review flow
+- add web pages and Agent API key support
+- add Alembic migrations and health checks
 
-### Milestone 2: Task And Actor APIs
+### Suggested Next Steps
 
-- create actors
-- create tasks
-- list tasks
-- claim tasks
-
-### Milestone 3: File Upload And Submission
-
-- upload task attachments
-- upload submission artifacts
-- download files
-
-### Milestone 4: Web UI
-
-- task list page
-- task detail page
-- create task page
-- actor page
-
-### Milestone 5: Review And Operations
-
-- approve and reject flow
-- event log visibility
-- heartbeat and stale run handling
+- tighten manifest schema validation and versioning
+- add finer-grained login and permissions
+- improve production PostgreSQL guidance
+- extend operations visibility and task filtering
 
 ## 11. Local Development Workflow
 
 Suggested local loop:
 
 1. start PostgreSQL
-2. run migrations
+2. run migrations: `alembic upgrade head`
 3. start FastAPI in reload mode
 4. upload an example task package
 5. claim and submit through API
 6. verify the task in the browser
+
+Recommended commands:
+
+```bash
+pip install -r requirements.txt
+alembic upgrade head
+uvicorn app.main:app --reload
+```
+
+Operational endpoints:
+
+- `GET /healthz`
+- `GET /readyz`
 
 ## 12. VPS Deployment Notes
 
@@ -321,6 +317,8 @@ Minimum initial deployment guidance:
 - keep app port private behind Caddy
 - back up PostgreSQL and file storage
 - store secrets in environment variables, not in git
+- keep `AUTO_INIT_DB=false` in production
+- run `alembic upgrade head` before serving traffic
 
 ## 13. Security Checklist
 
@@ -355,7 +353,7 @@ Must-have tests for MVP:
 
 The next implementation work should be:
 
-1. define `manifest.yaml` schema
-2. create database tables
-3. scaffold FastAPI app structure
-4. implement task creation and list endpoints
+1. tighten `manifest.yaml` schema validation and package versioning
+2. add finer login and permission controls
+3. improve the production deployment handbook
+4. expand operations visibility and task filtering

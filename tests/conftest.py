@@ -12,6 +12,7 @@ def client(tmp_path, monkeypatch):
     monkeypatch.setenv("DATABASE_URL", f"sqlite:///{database_path.as_posix()}")
     monkeypatch.setenv("STORAGE_ROOT", str(storage_root))
     monkeypatch.setenv("DEBUG", "false")
+    monkeypatch.setenv("AUTO_INIT_DB", "true")
 
     from app.config import get_settings
 
