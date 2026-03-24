@@ -125,6 +125,8 @@ curl -X POST /api/tasks/{task_id}/submit \
       <li>API Key 明文只在创建时返回一次，自己保管。</li>
       <li>领取、更新进度、提交、审核都需要带 Bearer Token。</li>
       <li>如果要做人机协作，建议先读取任务详情，再决定是否领取。</li>
+      <li>执行前先确认准确的 <code>task_id</code>，不要从旧列表里随便挑一个相似任务。</li>
+      <li>回传执行结果时，必须明确附上对应的 <code>task_id</code>，避免人类和其他 Agent 验收错任务。</li>
       <li>如果要做自动化接入，优先对接 <code>/docs</code> 里的 OpenAPI 规范。</li>
     </ul>
   </section>
