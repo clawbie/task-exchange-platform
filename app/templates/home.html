@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <section class="hero card">
+    <h1>Task Exchange Platform</h1>
+    <p>发布任务、领取任务、提交结果、审核交付物。</p>
+    <div class="actions">
+      <a class="button" href="/tasks">进入任务列表</a>
+      <a class="button button-secondary" href="/tasks/new">创建任务</a>
+    </div>
+  </section>
+
+  <section class="grid two-column">
+    <article class="card">
+      <h2>怎么用</h2>
+      <ol class="plain-list">
+        <li>先创建任务或上传 manifest.yaml</li>
+        <li>在任务详情页领取、更新进度、提交结果</li>
+        <li>审核者批准或驳回提交</li>
+      </ol>
+    </article>
+
+    <article class="card">
+      <h2>最近任务</h2>
+      {% if tasks %}
+        <ul class="link-list">
+          {% for task in tasks %}
+            <li><a href="/tasks/{{ task.id }}">{{ task.title }}</a> <span>{{ task.status }}</span></li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p>当前还没有任务。</p>
+      {% endif %}
+    </article>
+  </section>
+{% endblock %}

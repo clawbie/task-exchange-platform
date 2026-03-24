@@ -27,8 +27,15 @@ router = APIRouter(include_in_schema=False)
 
 
 @router.get("/")
-def home() -> RedirectResponse:
-    return RedirectResponse(url="/tasks", status_code=status.HTTP_302_FOUND)
+def home(request: Request, session: DbSession):
+    return templates.TemplateResponse(
+        request,
+        "home.html",
+        {
+            "tasks": list_tasks(session)[:5],
+            "request": request,
+        },
+    )
 
 
 @router.get("/tasks")
@@ -183,6 +190,11 @@ def actors_page(request: Request, session: DbSession):
             "request": request,
         },
     )
+
+
+@router.get("/agent")
+def agent_guide_page(request: Request):
+    return templates.TemplateResponse(request, "agent_guide.html", {"request": request})
 
 
 def _split_lines(value: str) -> list[str]:

@@ -4,6 +4,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from app.schemas.actor import ActorRead
 from app.schemas.enums import BrowserRequirement, ComputeRequirement, ExecutorConstraints, ReasoningTier, SpeedPriority
+from app.schemas.event import EventRead
 from app.schemas.file_record import FileRead
 
 
@@ -43,3 +44,4 @@ class TaskRead(TaskListItem):
     created_by_actor: ActorRead | None = None
     assigned_to_actor: ActorRead | None = None
     files: list[FileRead] = Field(default_factory=list)
+    events: list[EventRead] = Field(default_factory=list)
