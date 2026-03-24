@@ -1,3 +1,4 @@
+from app.models.api_key import ApiKey
 from app.models.actor import Actor
 from app.models.event import Event
 from app.models.file_record import FileRecord
@@ -7,6 +8,7 @@ from app.models.task_package import TaskPackage
 from app.models.task_run import TaskRun
 
 __all__ = [
+    "ApiKey",
     "Actor",
     "Event",
     "FileRecord",

@@ -32,3 +32,4 @@ class Actor(Base):
         foreign_keys="Task.assigned_to_actor_id",
         back_populates="assigned_to_actor",
     )
+    api_keys = relationship("ApiKey", back_populates="actor", cascade="all, delete-orphan")

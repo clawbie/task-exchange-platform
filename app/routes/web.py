@@ -8,7 +8,7 @@ from sqlalchemy import select
 from app.deps import DbSession
 from app.models.actor import Actor
 from app.schemas.task import TaskCreate
-from app.services.tasks import create_task, get_task, list_tasks
+from app.services.tasks import create_task, get_task, list_task_submissions, list_tasks
 
 
 templates = Jinja2Templates(directory=Path(__file__).resolve().parents[1] / "templates")
@@ -77,6 +77,7 @@ def task_detail_page(task_id: str, request: Request, session: DbSession):
         request,
         "task_detail.html",
         {
+            "submissions": list_task_submissions(session, task_id),
             "task": get_task(session, task_id),
             "request": request,
         },

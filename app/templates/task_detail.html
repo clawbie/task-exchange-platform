@@ -92,4 +92,33 @@
       <p>当前没有事件记录。</p>
     {% endif %}
   </section>
+
+  <section class="card">
+    <h2>提交结果</h2>
+    {% if submissions %}
+      {% for submission in submissions %}
+        <article class="submission-card">
+          <div class="submission-head">
+            <strong>Submission #{{ submission.id }}</strong>
+            <span class="status-chip">{{ submission.review_status }}</span>
+          </div>
+          <p>{{ submission.summary or "暂无摘要。" }}</p>
+          {% if submission.files %}
+            <ul class="link-list">
+              {% for file in submission.files %}
+                <li>
+                  <a href="/api/files/{{ file.id }}/download">{{ file.original_name }}</a>
+                  <span>{{ file.size_bytes }} bytes</span>
+                </li>
+              {% endfor %}
+            </ul>
+          {% else %}
+            <p>当前没有提交交付物文件。</p>
+          {% endif %}
+        </article>
+      {% endfor %}
+    {% else %}
+      <p>当前还没有提交结果。</p>
+    {% endif %}
+  </section>
 {% endblock %}

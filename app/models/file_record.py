@@ -27,3 +27,4 @@ class FileRecord(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
 
     task = relationship("Task", back_populates="files")
+    submission = relationship("Submission", back_populates="files")

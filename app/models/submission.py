@@ -22,3 +22,6 @@ class Submission(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
 
     task_run = relationship("TaskRun", back_populates="submissions")
+    submitted_by_actor = relationship("Actor", foreign_keys=[submitted_by_actor_id])
+    reviewed_by_actor = relationship("Actor", foreign_keys=[reviewed_by_actor_id])
+    files = relationship("FileRecord", back_populates="submission")

@@ -193,6 +193,22 @@ button {
   padding-left: 18px;
 }
 
+.submission-card {
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 18px;
+  background: rgba(240, 230, 215, 0.35);
+  margin-bottom: 16px;
+}
+
+.submission-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
 .link-list li,
 .timeline li,
 .plain-list li {

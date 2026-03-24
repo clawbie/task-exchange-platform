@@ -22,4 +22,5 @@ class TaskRun(Base):
     summary: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     task = relationship("Task", back_populates="runs")
+    executor_actor = relationship("Actor")
     submissions = relationship("Submission", back_populates="task_run", cascade="all, delete-orphan")
