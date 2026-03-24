@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import hashlib
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from uuid import uuid4
 
@@ -21,7 +21,7 @@ class LocalFileStorage:
         self.root.mkdir(parents=True, exist_ok=True)
 
     async def save_upload(self, upload: UploadFile) -> dict:
-        today = datetime.utcnow()
+        today = datetime.now(timezone.utc)
         target_dir = self.root / today.strftime("%Y") / today.strftime("%m") / today.strftime("%d")
         target_dir.mkdir(parents=True, exist_ok=True)
 
