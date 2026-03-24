@@ -18,6 +18,7 @@
 
 - 产品文档：`docs/PRODUCT.zh-CN.md`
 - 开发手册：`docs/DEVELOPMENT_GUIDE.zh-CN.md`
+- 本地部署手册：`docs/DEPLOYMENT_LOCAL.zh-CN.md`
 - 任务包示例：`examples/task-package/`
 - 提交结果示例：`examples/submission/`
 - Web 页面：任务列表、任务详情、任务创建、参与者列表
@@ -73,6 +74,10 @@ MVP 阶段，任务只声明 5 个调度属性：
 5. 在任务详情页查看状态、事件和文件下载
 
 ## 启动与部署
+
+推荐优先阅读：
+
+- 本地部署手册：`docs/DEPLOYMENT_LOCAL.zh-CN.md`
 
 - 默认行为：`AUTO_INIT_DB=false`，推荐显式执行迁移
 - 测试环境：会显式打开 `AUTO_INIT_DB=true`

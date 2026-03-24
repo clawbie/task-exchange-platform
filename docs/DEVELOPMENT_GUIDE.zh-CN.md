@@ -309,6 +309,10 @@ uvicorn app.main:app --reload
 
 ## 12. VPS 部署说明
 
+建议配合阅读：
+
+- `docs/DEPLOYMENT_LOCAL.zh-CN.md`
+
 推荐的单机部署组成：
 
 - FastAPI 应用容器

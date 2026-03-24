@@ -303,6 +303,10 @@ Operational endpoints:
 
 ## 12. VPS Deployment Notes
 
+Recommended companion doc:
+
+- `docs/DEPLOYMENT_LOCAL.zh-CN.md`
+
 Recommended single-node deployment:
 
 - FastAPI app container
