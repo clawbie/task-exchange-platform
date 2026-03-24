@@ -6,6 +6,7 @@ from app.deps import CurrentActor, DbSession
 from app.schemas.submission import ReviewDecision, SubmissionRead, TaskProgressUpdate
 from app.schemas.task import TaskCreate, TaskListItem, TaskRead
 from app.schemas.task_run import TaskRunRead
+from app.services.package_parser import build_task_create_payload
 from app.services.tasks import (
     claim_task,
     create_task,
@@ -86,23 +87,24 @@ def api_reject_task(
 @router.post("/upload", response_model=TaskRead, status_code=status.HTTP_201_CREATED)
 async def api_create_task_with_upload(
     session: DbSession,
-    title: Annotated[str, Form(...)],
+    title: Annotated[str, Form()] = "",
     description: Annotated[str, Form()] = "",
     creator_name: Annotated[str, Form()] = "",
-    creator_type: Annotated[str, Form()] = "human",
-    executor_constraints: Annotated[str, Form()] = "human_or_agent",
-    reasoning_tier: Annotated[str, Form()] = "medium",
-    browser_requirement: Annotated[str, Form()] = "none",
-    compute_requirement: Annotated[str, Form()] = "tiny",
-    speed_priority: Annotated[str, Form()] = "balanced",
+    creator_type: Annotated[str, Form()] = "",
+    executor_constraints: Annotated[str, Form()] = "",
+    reasoning_tier: Annotated[str, Form()] = "",
+    browser_requirement: Annotated[str, Form()] = "",
+    compute_requirement: Annotated[str, Form()] = "",
+    speed_priority: Annotated[str, Form()] = "",
     deliverables: Annotated[str, Form()] = "",
     acceptance: Annotated[str, Form()] = "",
+    manifest_file: UploadFile | None = File(default=None),
     attachments: list[UploadFile] | None = File(default=None),
 ) -> TaskRead:
-    payload = TaskCreate(
+    payload = await build_task_create_payload(
         title=title,
         description=description,
-        creator_name=creator_name or None,
+        creator_name=creator_name,
         creator_type=creator_type,
         executor_constraints=executor_constraints,
         reasoning_tier=reasoning_tier,
@@ -111,6 +113,7 @@ async def api_create_task_with_upload(
         speed_priority=speed_priority,
         deliverables=_split_lines(deliverables),
         acceptance=_split_lines(acceptance),
+        manifest_file=manifest_file,
     )
     return await create_task(session, payload, attachments)
 

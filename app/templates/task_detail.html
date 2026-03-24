@@ -27,6 +27,8 @@
         <dd>{{ task.speed_priority }}</dd>
         <dt>创建者</dt>
         <dd>{{ task.created_by_actor.name if task.created_by_actor else "-" }}</dd>
+        <dt>当前领取者</dt>
+        <dd>{{ task.assigned_to_actor.name if task.assigned_to_actor else "-" }}</dd>
       </dl>
       <h3>描述</h3>
       <p>{{ task.description or "暂无描述。" }}</p>
@@ -37,10 +39,12 @@
       {% if task.files %}
         <ul class="link-list">
           {% for file in task.files %}
-            <li>
-              <a href="/api/files/{{ file.id }}/download">{{ file.original_name }}</a>
-              <span>{{ file.size_bytes }} bytes</span>
-            </li>
+            {% if file.kind == "task_attachment" %}
+              <li>
+                <a href="/api/files/{{ file.id }}/download">{{ file.original_name }}</a>
+                <span>{{ file.size_bytes }} bytes</span>
+              </li>
+            {% endif %}
           {% endfor %}
         </ul>
       {% else %}
@@ -75,6 +79,127 @@
         <p>尚未定义验收标准。</p>
       {% endif %}
     </article>
+  </section>
+
+  <section class="card">
+    <h2>操作面板</h2>
+    <div class="grid two-column">
+      <form class="stack-form inline-card" action="/tasks/{{ task.id }}/claim" method="post">
+        <h3>领取任务</h3>
+        <label>
+          执行者名称
+          <input type="text" name="actor_name" placeholder="例如 clawbie 或 openclaw-bot" required>
+        </label>
+        <label>
+          执行者类型
+          <select name="actor_type">
+            <option value="human">human</option>
+            <option value="agent">agent</option>
+            <option value="service">service</option>
+          </select>
+        </label>
+        <button class="button" type="submit">领取</button>
+      </form>
+
+      <form class="stack-form inline-card" action="/tasks/{{ task.id }}/progress" method="post">
+        <h3>更新进度</h3>
+        <label>
+          执行者名称
+          <input type="text" name="actor_name" required>
+        </label>
+        <label>
+          执行者类型
+          <select name="actor_type">
+            <option value="human">human</option>
+            <option value="agent">agent</option>
+            <option value="service">service</option>
+          </select>
+        </label>
+        <label>
+          进度百分比
+          <input type="number" name="progress_percent" min="0" max="100" value="50" required>
+        </label>
+        <label>
+          摘要
+          <textarea name="summary" rows="3"></textarea>
+        </label>
+        <button class="button" type="submit">更新进度</button>
+      </form>
+    </div>
+
+    <div class="grid two-column">
+      <form class="stack-form inline-card" action="/tasks/{{ task.id }}/submit" method="post" enctype="multipart/form-data">
+        <h3>提交结果</h3>
+        <label>
+          执行者名称
+          <input type="text" name="actor_name" required>
+        </label>
+        <label>
+          执行者类型
+          <select name="actor_type">
+            <option value="human">human</option>
+            <option value="agent">agent</option>
+            <option value="service">service</option>
+          </select>
+        </label>
+        <label>
+          结果摘要
+          <textarea name="summary" rows="3"></textarea>
+        </label>
+        <label>
+          result_json
+          <textarea name="result_json" rows="4" placeholder='{"score": 1}'></textarea>
+        </label>
+        <label>
+          交付物文件
+          <input type="file" name="artifacts" multiple>
+        </label>
+        <button class="button" type="submit">提交结果</button>
+      </form>
+
+      <div class="stack-form inline-card">
+        <h3>审核结果</h3>
+        <form class="stack-form" action="/tasks/{{ task.id }}/approve" method="post">
+          <label>
+            审核者名称
+            <input type="text" name="actor_name" required>
+          </label>
+          <label>
+            审核者类型
+            <select name="actor_type">
+              <option value="human">human</option>
+              <option value="service">service</option>
+              <option value="agent">agent</option>
+            </select>
+          </label>
+          <label>
+            备注
+            <textarea name="comment" rows="2"></textarea>
+          </label>
+          <button class="button" type="submit">批准</button>
+        </form>
+
+        <form class="stack-form" action="/tasks/{{ task.id }}/reject" method="post">
+          <label>
+            审核者名称
+            <input type="text" name="actor_name" required>
+          </label>
+          <label>
+            审核者类型
+            <select name="actor_type">
+              <option value="human">human</option>
+              <option value="service">service</option>
+              <option value="agent">agent</option>
+            </select>
+          </label>
+          <label>
+            驳回原因
+            <textarea name="comment" rows="2"></textarea>
+          </label>
+          <button class="button button-secondary" type="submit">驳回</button>
+        </form>
+      </div>
+    </div>
   </section>
 
   <section class="card">

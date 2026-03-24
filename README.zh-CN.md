@@ -14,12 +14,16 @@
 
 ## 当前范围
 
-当前仓库已经包含第一版 MVP 的基础文档和示例文件：
+当前仓库已经包含第一版 MVP 的基础文档、示例文件和一套可运行骨架：
 
 - 产品文档：`docs/PRODUCT.zh-CN.md`
 - 开发手册：`docs/DEVELOPMENT_GUIDE.zh-CN.md`
 - 任务包示例：`examples/task-package/`
 - 提交结果示例：`examples/submission/`
+- Web 页面：任务列表、任务详情、任务创建、参与者列表
+- API：任务创建、领取、进度更新、结果提交、审核、文件下载
+- 认证：Agent API Key
+- 测试：覆盖 API 与 Web 端主链路
 
 英文版本仍然保留，便于对照：
 
@@ -59,10 +63,17 @@ MVP 阶段，任务只声明 5 个调度属性：
 - 反向代理：Caddy
 - 部署方式：VPS 上使用 Docker Compose
 
+## 当前已支持的流程
+
+1. 通过网页或 API 创建任务
+2. 上传 `manifest.yaml`、任务附件和结果交付物
+3. 人类或 Agent 领取任务并更新进度
+4. 通过网页或 API 提交结果并审核
+5. 在任务详情页查看状态、事件和文件下载
+
 ## 下一步开发建议
 
-1. 设计数据库表与迁移
-2. 实现任务包解析和文件存储服务
-3. 实现任务、Actor、Submission API
-4. 搭建任务与 Actor 的 Web 页面
-5. 增加人类登录和 Agent API Key 认证
+1. 设计 PostgreSQL 迁移与 Alembic
+2. 强化任务包 schema 校验和版本管理
+3. 增加更细的 Web 登录和权限控制
+4. 继续完善部署说明与运维手册

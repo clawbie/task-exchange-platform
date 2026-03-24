@@ -13,6 +13,7 @@ from app.models.file_record import FileRecord
 from app.models.base import utcnow
 from app.models.submission import Submission
 from app.models.task import Task
+from app.models.task_package import TaskPackage
 from app.models.task_run import TaskRun
 from app.schemas.submission import ReviewDecision, TaskProgressUpdate
 from app.schemas.task import TaskCreate
@@ -95,6 +96,7 @@ async def create_task(
     payload: TaskCreate,
     attachments: Iterable[UploadFile] | None = None,
 ) -> Task:
+    attachment_items = list(attachments or [])
     creator = None
     if payload.creator_name:
         creator = get_or_create_actor(session, payload.creator_name, payload.creator_type)
@@ -115,8 +117,17 @@ async def create_task(
     session.add(task)
     session.flush()
 
+    session.add(
+        TaskPackage(
+            task_id=task.id,
+            version=1,
+            manifest_json=_build_task_manifest(payload, attachment_items),
+            created_by_actor_id=creator.id if creator else None,
+        )
+    )
+
     storage = LocalFileStorage()
-    for upload in attachments or []:
+    for upload in attachment_items:
         if not upload.filename:
             continue
         stored = await storage.save_upload(upload)
@@ -152,6 +163,8 @@ async def create_task(
 
 def claim_task(session: Session, task_id: str, actor: Actor) -> TaskRun:
     task = get_task(session, task_id)
+    _assert_actor_can_execute(task, actor)
+
     if task.status in {"approved", "rejected", "cancelled", "archived"}:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Task is not claimable")
 
@@ -345,3 +358,27 @@ def _get_submission_by_id(session: Session, submission_id: int) -> Submission:
     if not submission:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Submission not found")
     return submission
+
+
+def _assert_actor_can_execute(task: Task, actor: Actor) -> None:
+    if task.executor_constraints == "human_only" and actor.type != "human":
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Task requires a human executor")
+    if task.executor_constraints == "agent_only" and actor.type not in {"agent", "service"}:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Task requires an agent executor")
+
+
+def _build_task_manifest(payload: TaskCreate, attachments: list[UploadFile]) -> dict:
+    return {
+        "title": payload.title,
+        "description": payload.description,
+        "creator_name": payload.creator_name,
+        "creator_type": payload.creator_type,
+        "executor_constraints": payload.executor_constraints.value,
+        "reasoning_tier": payload.reasoning_tier.value,
+        "browser_requirement": payload.browser_requirement.value,
+        "compute_requirement": payload.compute_requirement.value,
+        "speed_priority": payload.speed_priority.value,
+        "deliverables": payload.deliverables,
+        "acceptance": payload.acceptance,
+        "attachments": [upload.filename for upload in attachments if upload.filename],
+    }

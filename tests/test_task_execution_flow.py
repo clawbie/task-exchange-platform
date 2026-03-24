@@ -110,3 +110,26 @@ def test_claim_requires_api_key(client):
     response = client.post(f"/api/tasks/{task_id}/claim")
 
     assert response.status_code == 401
+
+
+def test_human_cannot_claim_agent_only_task(client):
+    create_task_response = client.post(
+        "/api/tasks",
+        json={
+            "title": "Agent only task",
+            "description": "Should reject human claims.",
+            "executor_constraints": "agent_only",
+            "reasoning_tier": "low",
+            "browser_requirement": "none",
+            "compute_requirement": "tiny",
+            "speed_priority": "fast",
+            "deliverables": [],
+            "acceptance": [],
+        },
+    )
+    task_id = create_task_response.json()["id"]
+    human_key = _create_api_key(client, "human-reviewer", "human")
+
+    response = client.post(f"/api/tasks/{task_id}/claim", headers={"Authorization": f"Bearer {human_key}"})
+
+    assert response.status_code == 403

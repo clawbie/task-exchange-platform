@@ -7,8 +7,19 @@ from sqlalchemy import select
 
 from app.deps import DbSession
 from app.models.actor import Actor
-from app.schemas.task import TaskCreate
-from app.services.tasks import create_task, get_task, list_task_submissions, list_tasks
+from app.schemas.submission import ReviewDecision, TaskProgressUpdate
+from app.services.package_parser import build_task_create_payload
+from app.services.tasks import (
+    claim_task,
+    create_task,
+    get_or_create_actor,
+    get_task,
+    list_task_submissions,
+    list_tasks,
+    review_task_submission,
+    submit_task,
+    update_task_progress,
+)
 
 
 templates = Jinja2Templates(directory=Path(__file__).resolve().parents[1] / "templates")
@@ -41,23 +52,24 @@ def task_new_page(request: Request):
 async def task_new_submit(
     request: Request,
     session: DbSession,
-    title: str = Form(...),
+    title: str = Form(""),
     description: str = Form(""),
     creator_name: str = Form(""),
-    creator_type: str = Form("human"),
-    executor_constraints: str = Form("human_or_agent"),
-    reasoning_tier: str = Form("medium"),
-    browser_requirement: str = Form("none"),
-    compute_requirement: str = Form("tiny"),
-    speed_priority: str = Form("balanced"),
+    creator_type: str = Form(""),
+    executor_constraints: str = Form(""),
+    reasoning_tier: str = Form(""),
+    browser_requirement: str = Form(""),
+    compute_requirement: str = Form(""),
+    speed_priority: str = Form(""),
     deliverables: str = Form(""),
     acceptance: str = Form(""),
+    manifest_file: UploadFile | None = File(default=None),
     attachments: list[UploadFile] | None = File(default=None),
 ):
-    payload = TaskCreate(
+    payload = await build_task_create_payload(
         title=title,
         description=description,
-        creator_name=creator_name or None,
+        creator_name=creator_name,
         creator_type=creator_type,
         executor_constraints=executor_constraints,
         reasoning_tier=reasoning_tier,
@@ -66,6 +78,7 @@ async def task_new_submit(
         speed_priority=speed_priority,
         deliverables=_split_lines(deliverables),
         acceptance=_split_lines(acceptance),
+        manifest_file=manifest_file,
     )
     task = await create_task(session, payload, attachments)
     return RedirectResponse(url=f"/tasks/{task.id}", status_code=status.HTTP_303_SEE_OTHER)
@@ -82,6 +95,81 @@ def task_detail_page(task_id: str, request: Request, session: DbSession):
             "request": request,
         },
     )
+
+
+@router.post("/tasks/{task_id}/claim")
+def task_claim_submit(
+    task_id: str,
+    session: DbSession,
+    actor_name: str = Form(...),
+    actor_type: str = Form("human"),
+):
+    actor = get_or_create_actor(session, actor_name, actor_type)
+    claim_task(session, task_id, actor)
+    return RedirectResponse(url=f"/tasks/{task_id}", status_code=status.HTTP_303_SEE_OTHER)
+
+
+@router.post("/tasks/{task_id}/progress")
+def task_progress_submit(
+    task_id: str,
+    session: DbSession,
+    actor_name: str = Form(...),
+    actor_type: str = Form("human"),
+    progress_percent: int = Form(...),
+    summary: str = Form(""),
+):
+    actor = get_or_create_actor(session, actor_name, actor_type)
+    payload = TaskProgressUpdate(progress_percent=progress_percent, summary=summary or None)
+    update_task_progress(session, task_id, actor, payload)
+    return RedirectResponse(url=f"/tasks/{task_id}", status_code=status.HTTP_303_SEE_OTHER)
+
+
+@router.post("/tasks/{task_id}/submit")
+async def task_result_submit(
+    task_id: str,
+    session: DbSession,
+    actor_name: str = Form(...),
+    actor_type: str = Form("human"),
+    summary: str = Form(""),
+    result_json: str = Form(""),
+    artifacts: list[UploadFile] | None = File(default=None),
+):
+    actor = get_or_create_actor(session, actor_name, actor_type)
+    await submit_task(
+        session,
+        task_id,
+        actor,
+        summary=summary or None,
+        result_json_text=result_json or None,
+        artifacts=artifacts,
+    )
+    return RedirectResponse(url=f"/tasks/{task_id}", status_code=status.HTTP_303_SEE_OTHER)
+
+
+@router.post("/tasks/{task_id}/approve")
+def task_approve_submit(
+    task_id: str,
+    session: DbSession,
+    actor_name: str = Form(...),
+    actor_type: str = Form("human"),
+    comment: str = Form(""),
+):
+    actor = get_or_create_actor(session, actor_name, actor_type)
+    review_task_submission(session, task_id, actor, "approved", ReviewDecision(comment=comment or None))
+    return RedirectResponse(url=f"/tasks/{task_id}", status_code=status.HTTP_303_SEE_OTHER)
+
+
+@router.post("/tasks/{task_id}/reject")
+def task_reject_submit(
+    task_id: str,
+    session: DbSession,
+    actor_name: str = Form(...),
+    actor_type: str = Form("human"),
+    comment: str = Form(""),
+):
+    actor = get_or_create_actor(session, actor_name, actor_type)
+    review_task_submission(session, task_id, actor, "rejected", ReviewDecision(comment=comment or None))
+    return RedirectResponse(url=f"/tasks/{task_id}", status_code=status.HTTP_303_SEE_OTHER)
 
 
 @router.get("/actors")

@@ -95,3 +95,40 @@ def test_list_actors_after_task_creation(client):
     assert len(actors) == 1
     assert actors[0]["name"] == "reviewer-01"
     assert actors[0]["type"] == "service"
+
+
+def test_create_task_from_manifest_file(client):
+    response = client.post(
+        "/api/tasks/upload",
+        data={},
+        files=[
+            (
+                "manifest_file",
+                (
+                    "manifest.yaml",
+                    b"""
+title: Manifest-created task
+description: Loaded from manifest
+creator_name: manifest-bot
+creator_type: agent
+executor_constraints: agent_only
+reasoning_tier: high
+browser_requirement: read_only
+compute_requirement: small
+speed_priority: quality
+deliverables:
+  - report.md
+acceptance:
+  - Must come from manifest
+""",
+                    "application/x-yaml",
+                ),
+            ),
+        ],
+    )
+
+    assert response.status_code == 201
+    created = response.json()
+    assert created["title"] == "Manifest-created task"
+    assert created["created_by_actor"]["name"] == "manifest-bot"
+    assert created["executor_constraints"] == "agent_only"
