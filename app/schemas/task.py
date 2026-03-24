@@ -1,9 +1,9 @@
 from datetime import datetime
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from app.schemas.actor import ActorRead
-from app.schemas.enums import BrowserRequirement, ComputeRequirement, ExecutorConstraints, ReasoningTier, SpeedPriority
+from app.schemas.enums import ActorType, BrowserRequirement, ComputeRequirement, ExecutorConstraints, ReasoningTier, SpeedPriority
 from app.schemas.event import EventRead
 from app.schemas.file_record import FileRead
 
@@ -20,6 +20,19 @@ class TaskCreate(BaseModel):
     speed_priority: SpeedPriority = SpeedPriority.BALANCED
     deliverables: list[str] = Field(default_factory=list)
     acceptance: list[str] = Field(default_factory=list)
+
+    @model_validator(mode="after")
+    def validate_agent_task_requirements(self):
+        if self.creator_type in {ActorType.AGENT.value, ActorType.SERVICE.value}:
+            if not (self.creator_name or "").strip():
+                raise ValueError("creator_name is required for agent/service tasks")
+            if not self.description.strip():
+                raise ValueError("description is required for agent/service tasks")
+            if not self.deliverables:
+                raise ValueError("deliverables are required for agent/service tasks")
+            if not self.acceptance:
+                raise ValueError("acceptance criteria are required for agent/service tasks")
+        return self
 
 
 class TaskListItem(BaseModel):

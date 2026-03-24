@@ -71,7 +71,7 @@ def test_create_task_with_attachments_and_download_file(client):
 
 
 def test_list_actors_after_task_creation(client):
-    client.post(
+    create_response = client.post(
         "/api/tasks",
         json={
             "title": "Seed actor list",
@@ -83,10 +83,12 @@ def test_list_actors_after_task_creation(client):
             "browser_requirement": "read_only",
             "compute_requirement": "small",
             "speed_priority": "quality",
-            "deliverables": [],
-            "acceptance": [],
+            "deliverables": ["actor-list.txt"],
+            "acceptance": ["Actor should appear in actor list"],
         },
     )
+
+    assert create_response.status_code == 201
 
     actors_response = client.get("/api/actors")
 
@@ -132,3 +134,31 @@ acceptance:
     assert created["title"] == "Manifest-created task"
     assert created["created_by_actor"]["name"] == "manifest-bot"
     assert created["executor_constraints"] == "agent_only"
+
+
+def test_reject_incomplete_agent_task_payload(client):
+    response = client.post(
+        "/api/tasks",
+        json={
+            "title": "Bad agent task",
+            "creator_name": "agent-x",
+            "creator_type": "agent",
+            "executor_constraints": "agent_only",
+        },
+    )
+
+    assert response.status_code == 422
+
+
+def test_allow_minimal_human_task_payload(client):
+    response = client.post(
+        "/api/tasks",
+        json={
+            "title": "Minimal human task",
+            "creator_type": "human",
+        },
+    )
+
+    assert response.status_code == 201
+    created = response.json()
+    assert created["title"] == "Minimal human task"
