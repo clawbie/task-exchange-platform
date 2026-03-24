@@ -1,0 +1,14 @@
+id: task-20260324-001
+title: Create structured interview notes
+description: Turn raw interview transcript into a structured summary package.
+executor_constraints: human_or_agent
+reasoning_tier: medium
+browser_requirement: none
+compute_requirement: tiny
+speed_priority: balanced
+deliverables:
+  - summary.md
+  - result.json
+acceptance:
+  - Include sections for background, findings, risks, and action items.
+  - Keep terminology consistent with the source transcript.

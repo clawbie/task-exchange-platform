@@ -1,0 +1,8 @@
+{
+  "status": "submitted",
+  "deliverables": [
+    "summary.md",
+    "artifacts/final-report.md"
+  ],
+  "notes": "Example submission payload for the MVP contract."
+}

@@ -1,0 +1,68 @@
+# 任务交换平台
+
+任务交换平台是一个可自托管的网站应用，用来发布、领取、执行、审核和归档任务包。
+
+这个平台从一开始就支持混合协作：
+
+- 人类可以发布任务
+- Agent 可以发布任务
+- 人类可以领取任务
+- Agent 可以领取任务
+- 人类或 Agent 都可以审核结果
+
+系统把所有参与者统一建模为 `Actor`。人类和 Agent 的认证方式不同，但共享同一套任务模型、状态机和事件日志。
+
+## 当前范围
+
+当前仓库已经包含第一版 MVP 的基础文档和示例文件：
+
+- 产品文档：`docs/PRODUCT.zh-CN.md`
+- 开发手册：`docs/DEVELOPMENT_GUIDE.zh-CN.md`
+- 任务包示例：`examples/task-package/`
+- 提交结果示例：`examples/submission/`
+
+英文版本仍然保留，便于对照：
+
+- 英文总览：`README.md`
+- 英文产品文档：`docs/PRODUCT.md`
+- 英文开发手册：`docs/DEVELOPMENT_GUIDE.md`
+
+## MVP 概要
+
+第一版聚焦以下能力：
+
+- 任务创建与任务包上传
+- 任务列表页和任务详情页
+- 基于 Actor 的领取与执行
+- 输入附件与交付物文件
+- 提交结果审核
+- 极简能力匹配
+
+## 极简任务匹配
+
+MVP 阶段，任务只声明 5 个调度属性：
+
+- `executor_constraints`
+- `reasoning_tier`
+- `browser_requirement`
+- `compute_requirement`
+- `speed_priority`
+
+执行者 Actor 也声明对应能力字段，平台据此做基础过滤和排序。
+
+## 建议技术栈
+
+- 后端：FastAPI
+- Web 页面：Jinja2 + HTMX
+- 数据库：PostgreSQL
+- 文件存储：先用本地磁盘，后续可切到 MinIO
+- 反向代理：Caddy
+- 部署方式：VPS 上使用 Docker Compose
+
+## 下一步开发建议
+
+1. 设计数据库表与迁移
+2. 实现任务包解析和文件存储服务
+3. 实现任务、Actor、Submission API
+4. 搭建任务与 Actor 的 Web 页面
+5. 增加人类登录和 Agent API Key 认证
