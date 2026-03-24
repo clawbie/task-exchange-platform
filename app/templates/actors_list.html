@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <section class="page-head">
+    <div>
+      <h1>Actors</h1>
+      <p>当前系统中出现过的人类、Agent 与服务账号。</p>
+    </div>
+  </section>
+
+  <section class="card">
+    {% if actors %}
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>名称</th>
+            <th>类型</th>
+            <th>推理等级</th>
+            <th>浏览器能力</th>
+            <th>计算能力</th>
+            <th>速度等级</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for actor in actors %}
+            <tr>
+              <td>{{ actor.id }}</td>
+              <td>{{ actor.name }}</td>
+              <td>{{ actor.type }}</td>
+              <td>{{ actor.reasoning_tier }}</td>
+              <td>{{ actor.browser_capability }}</td>
+              <td>{{ actor.compute_capacity }}</td>
+              <td>{{ actor.speed_tier }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <p>当前还没有 Actor 记录，创建任务后会自动出现创建者。</p>
+    {% endif %}
+  </section>
+{% endblock %}

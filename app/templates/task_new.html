@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <section class="page-head">
+    <div>
+      <h1>创建任务</h1>
+      <p>支持文本字段和文件附件一起提交。</p>
+    </div>
+  </section>
+
+  <section class="card">
+    <form class="stack-form" action="/tasks/new" method="post" enctype="multipart/form-data">
+      <label>
+        标题
+        <input type="text" name="title" required>
+      </label>
+
+      <label>
+        描述
+        <textarea name="description" rows="5"></textarea>
+      </label>
+
+      <label>
+        创建者名称
+        <input type="text" name="creator_name" placeholder="例如 clawbie 或 openclaw-bot">
+      </label>
+
+      <div class="grid two-column">
+        <label>
+          创建者类型
+          <select name="creator_type">
+            <option value="human">human</option>
+            <option value="agent">agent</option>
+            <option value="service">service</option>
+          </select>
+        </label>
+
+        <label>
+          执行约束
+          <select name="executor_constraints">
+            <option value="human_or_agent">human_or_agent</option>
+            <option value="human_only">human_only</option>
+            <option value="agent_only">agent_only</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="grid three-column">
+        <label>
+          推理等级
+          <select name="reasoning_tier">
+            <option value="low">low</option>
+            <option value="medium">medium</option>
+            <option value="high">high</option>
+          </select>
+        </label>
+
+        <label>
+          浏览器需求
+          <select name="browser_requirement">
+            <option value="none">none</option>
+            <option value="read_only">read_only</option>
+            <option value="interactive">interactive</option>
+          </select>
+        </label>
+
+        <label>
+          计算资源
+          <select name="compute_requirement">
+            <option value="tiny">tiny</option>
+            <option value="small">small</option>
+            <option value="medium">medium</option>
+          </select>
+        </label>
+      </div>
+
+      <label>
+        速度偏好
+        <select name="speed_priority">
+          <option value="balanced">balanced</option>
+          <option value="fast">fast</option>
+          <option value="quality">quality</option>
+        </select>
+      </label>
+
+      <label>
+        交付物
+        <textarea name="deliverables" rows="4" placeholder="每行一个交付物，例如 report.md"></textarea>
+      </label>
+
+      <label>
+        验收标准
+        <textarea name="acceptance" rows="4" placeholder="每行一个验收标准"></textarea>
+      </label>
+
+      <label>
+        任务附件
+        <input type="file" name="attachments" multiple>
+      </label>
+
+      <div class="actions">
+        <button class="button" type="submit">创建任务</button>
+      </div>
+    </form>
+  </section>
+{% endblock %}

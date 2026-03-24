@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <section class="page-head">
+    <div>
+      <h1>{{ task.title }}</h1>
+      <p>{{ task.id }}</p>
+    </div>
+    <a class="button button-secondary" href="/tasks">返回列表</a>
+  </section>
+
+  <section class="grid two-column">
+    <article class="card">
+      <h2>任务信息</h2>
+      <dl class="meta-grid">
+        <dt>状态</dt>
+        <dd>{{ task.status }}</dd>
+        <dt>执行约束</dt>
+        <dd>{{ task.executor_constraints }}</dd>
+        <dt>推理等级</dt>
+        <dd>{{ task.reasoning_tier }}</dd>
+        <dt>浏览器需求</dt>
+        <dd>{{ task.browser_requirement }}</dd>
+        <dt>计算资源</dt>
+        <dd>{{ task.compute_requirement }}</dd>
+        <dt>速度偏好</dt>
+        <dd>{{ task.speed_priority }}</dd>
+        <dt>创建者</dt>
+        <dd>{{ task.created_by_actor.name if task.created_by_actor else "-" }}</dd>
+      </dl>
+      <h3>描述</h3>
+      <p>{{ task.description or "暂无描述。" }}</p>
+    </article>
+
+    <article class="card">
+      <h2>任务附件</h2>
+      {% if task.files %}
+        <ul class="link-list">
+          {% for file in task.files %}
+            <li>
+              <a href="/api/files/{{ file.id }}/download">{{ file.original_name }}</a>
+              <span>{{ file.size_bytes }} bytes</span>
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p>当前没有上传任务附件。</p>
+      {% endif %}
+    </article>
+  </section>
+
+  <section class="grid two-column">
+    <article class="card">
+      <h2>预期交付物</h2>
+      {% if task.deliverables %}
+        <ul class="plain-list">
+          {% for item in task.deliverables %}
+            <li>{{ item }}</li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p>尚未定义交付物。</p>
+      {% endif %}
+    </article>
+
+    <article class="card">
+      <h2>验收标准</h2>
+      {% if task.acceptance %}
+        <ul class="plain-list">
+          {% for item in task.acceptance %}
+            <li>{{ item }}</li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p>尚未定义验收标准。</p>
+      {% endif %}
+    </article>
+  </section>
+
+  <section class="card">
+    <h2>事件记录</h2>
+    {% if task.events %}
+      <ul class="timeline">
+        {% for event in task.events %}
+          <li>
+            <strong>{{ event.event_type }}</strong>
+            <span>{{ event.created_at.strftime("%Y-%m-%d %H:%M:%S") }}</span>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p>当前没有事件记录。</p>
+    {% endif %}
+  </section>
+{% endblock %}

@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <section class="page-head">
+    <div>
+      <h1>任务列表</h1>
+      <p>查看当前所有任务及其状态。</p>
+    </div>
+    <a class="button" href="/tasks/new">创建任务</a>
+  </section>
+
+  <section class="card">
+    {% if tasks %}
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>标题</th>
+            <th>状态</th>
+            <th>执行约束</th>
+            <th>附件数</th>
+            <th>更新时间</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for task in tasks %}
+            <tr>
+              <td><a href="/tasks/{{ task.id }}">{{ task.id }}</a></td>
+              <td>{{ task.title }}</td>
+              <td><span class="status-chip">{{ task.status }}</span></td>
+              <td>{{ task.executor_constraints }}</td>
+              <td>{{ task.files|length }}</td>
+              <td>{{ task.updated_at.strftime("%Y-%m-%d %H:%M") }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <p>当前还没有任务，可以先创建一个示例任务。</p>
+    {% endif %}
+  </section>
+{% endblock %}

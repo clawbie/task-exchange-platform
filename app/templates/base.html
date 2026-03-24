@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ title or "Task Exchange Platform" }}</title>
+    <link rel="stylesheet" href="/static/app.css">
+    <script src="https://unpkg.com/htmx.org@2.0.6"></script>
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="brand">
+        <a href="/tasks">Task Exchange Platform</a>
+        <p>面向人类与 Agent 的任务交换平台</p>
+      </div>
+      <nav class="site-nav">
+        <a href="/tasks">任务列表</a>
+        <a href="/tasks/new">新建任务</a>
+        <a href="/actors">Actors</a>
+        <a href="/docs">API Docs</a>
+      </nav>
+    </header>
+
+    <main class="page-shell">
+      {% block content %}{% endblock %}
+    </main>
+  </body>
+</html>
