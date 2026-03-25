@@ -198,13 +198,13 @@ def agent_guide_page(request: Request):
 
 
 @router.get("/agent/runbook")
-def agent_runbook_page(request: Request):
-    return templates.TemplateResponse(request, "agent_runbook.html", {"request": request})
+def agent_runbook_page() -> RedirectResponse:
+    return RedirectResponse(url="/agent", status_code=status.HTTP_302_FOUND)
 
 
 @router.get("/agent/discovery")
-def agent_discovery_page(request: Request):
-    return templates.TemplateResponse(request, "agent_discovery.html", {"request": request})
+def agent_discovery_page() -> RedirectResponse:
+    return RedirectResponse(url="/agent", status_code=status.HTTP_302_FOUND)
 
 
 def _split_lines(value: str) -> list[str]:
