@@ -311,6 +311,9 @@ def review_task_submission(
     decision: str,
     payload: ReviewDecision | None = None,
 ) -> Submission:
+    if actor.type != "service":
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only service actors can review task submissions")
+
     task = get_task(session, task_id)
     submission = get_latest_submission(session, task_id)
     if submission.review_status in {"approved", "rejected"}:
@@ -337,6 +340,40 @@ def review_task_submission(
     return _get_submission_by_id(session, submission.id)
 
 
+def reopen_task(session: Session, task_id: str, actor: Actor, comment: str | None = None) -> Task:
+    if actor.type != "service":
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only service actors can reopen tasks")
+
+    task = get_task(session, task_id)
+    if task.status not in {"submitted", "approved", "rejected"}:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Task is not reopenable")
+
+    task.status = "published"
+    task.assigned_to_actor_id = None
+
+    reopened_runs = session.scalars(
+        select(TaskRun).where(
+            TaskRun.task_id == task_id,
+            TaskRun.status.in_(["claimed", "running", "submitted"]),
+        )
+    ).all()
+    for run in reopened_runs:
+        run.status = "reopened"
+        if not run.ended_at:
+            run.ended_at = utcnow()
+
+    session.add(
+        Event(
+            task_id=task.id,
+            actor_id=actor.id,
+            event_type="task_reopened",
+            payload_json={"comment": comment},
+        )
+    )
+    session.commit()
+    return get_task(session, task.id)
+
+
 def _get_active_run(session: Session, task_id: str, actor_id: int) -> TaskRun:
     run = session.scalar(
         select(TaskRun)
@@ -347,9 +384,24 @@ def _get_active_run(session: Session, task_id: str, actor_id: int) -> TaskRun:
         )
         .order_by(TaskRun.id.desc())
     )
-    if not run:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Active run not found")
-    return run
+    if run:
+        return run
+
+    latest_run = session.scalar(
+        select(TaskRun)
+        .where(
+            TaskRun.task_id == task_id,
+            TaskRun.executor_actor_id == actor_id,
+        )
+        .order_by(TaskRun.id.desc())
+    )
+    if latest_run and latest_run.status in {"submitted", "approved", "rejected"}:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Task run already submitted; progress updates are closed",
+        )
+
+    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Active run not found")
 
 
 def _get_submission_by_id(session: Session, submission_id: int) -> Submission:

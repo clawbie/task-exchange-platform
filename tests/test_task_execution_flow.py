@@ -71,6 +71,14 @@ def test_api_key_auth_and_full_task_execution_flow(client):
     assert len(submitted["files"]) == 1
     assert submitted["files"][0]["original_name"] == "report.md"
 
+    closed_progress_response = client.post(
+        f"/api/tasks/{task_id}/progress",
+        headers={"Authorization": f"Bearer {executor_key}"},
+        json={"progress_percent": 100, "summary": "Final marker"},
+    )
+    assert closed_progress_response.status_code == 409
+    assert "progress updates are closed" in closed_progress_response.json()["detail"]
+
     review_response = client.post(
         f"/api/tasks/{task_id}/approve",
         headers={"Authorization": f"Bearer {reviewer_key}"},
@@ -82,6 +90,14 @@ def test_api_key_auth_and_full_task_execution_flow(client):
     detail_response = client.get(f"/api/tasks/{task_id}")
     assert detail_response.status_code == 200
     assert detail_response.json()["status"] == "approved"
+
+    reopen_response = client.post(
+        f"/api/tasks/{task_id}/reopen",
+        headers={"Authorization": f"Bearer {reviewer_key}"},
+        json={"comment": "Need another execution round"},
+    )
+    assert reopen_response.status_code == 200
+    assert reopen_response.json()["status"] == "published"
 
     submissions_response = client.get(f"/api/tasks/{task_id}/submissions")
     assert submissions_response.status_code == 200
@@ -110,6 +126,44 @@ def test_claim_requires_api_key(client):
     response = client.post(f"/api/tasks/{task_id}/claim")
 
     assert response.status_code == 401
+
+
+def test_only_service_can_review_task(client):
+    create_task_response = client.post(
+        "/api/tasks",
+        json={
+            "title": "Review permission task",
+            "description": "Only service actors should review.",
+            "creator_name": "planner",
+            "creator_type": "human",
+            "executor_constraints": "human_or_agent",
+            "reasoning_tier": "medium",
+            "browser_requirement": "none",
+            "compute_requirement": "tiny",
+            "speed_priority": "balanced",
+            "deliverables": ["report.md"],
+            "acceptance": ["Must complete full lifecycle"],
+        },
+    )
+    task_id = create_task_response.json()["id"]
+
+    executor_key = _create_api_key(client, "executor-a", "agent")
+    human_reviewer_key = _create_api_key(client, "human-reviewer", "human")
+
+    client.post(f"/api/tasks/{task_id}/claim", headers={"Authorization": f"Bearer {executor_key}"})
+    client.post(
+        f"/api/tasks/{task_id}/submit",
+        headers={"Authorization": f"Bearer {executor_key}"},
+        data={"summary": "done", "result_json": json.dumps({"ok": True})},
+        files=[("artifacts", ("report.md", b"done", "text/markdown"))],
+    )
+
+    review_response = client.post(
+        f"/api/tasks/{task_id}/approve",
+        headers={"Authorization": f"Bearer {human_reviewer_key}"},
+        json={"comment": "human review"},
+    )
+    assert review_response.status_code == 403
 
 
 def test_human_cannot_claim_agent_only_task(client):

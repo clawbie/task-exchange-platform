@@ -16,6 +16,7 @@ from app.services.tasks import (
     get_task,
     list_task_submissions,
     list_tasks,
+    reopen_task,
     review_task_submission,
     submit_task,
     update_task_progress,
@@ -176,6 +177,19 @@ def task_reject_submit(
 ):
     actor = get_or_create_actor(session, actor_name, actor_type)
     review_task_submission(session, task_id, actor, "rejected", ReviewDecision(comment=comment or None))
+    return RedirectResponse(url=f"/tasks/{task_id}", status_code=status.HTTP_303_SEE_OTHER)
+
+
+@router.post("/tasks/{task_id}/reopen")
+def task_reopen_submit(
+    task_id: str,
+    session: DbSession,
+    actor_name: str = Form(...),
+    actor_type: str = Form("service"),
+    comment: str = Form(""),
+):
+    actor = get_or_create_actor(session, actor_name, actor_type)
+    reopen_task(session, task_id, actor, comment or None)
     return RedirectResponse(url=f"/tasks/{task_id}", status_code=status.HTTP_303_SEE_OTHER)
 
 

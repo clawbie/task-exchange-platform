@@ -20,6 +20,7 @@
             <th>执行约束</th>
             <th>附件数</th>
             <th>更新时间</th>
+            <th>操作</th>
           </tr>
         </thead>
         <tbody>
@@ -31,6 +32,14 @@
               <td>{{ task.executor_constraints }}</td>
               <td>{{ task.files|length }}</td>
               <td>{{ task.updated_at.strftime("%Y-%m-%d %H:%M") }}</td>
+              <td>
+                <button
+                  type="button"
+                  class="button button-secondary copy-prompt-button"
+                  data-task-id="{{ task.id }}"
+                  data-task-url="https://task.clawbie.com/tasks/{{ task.id }}"
+                >复制提示词</button>
+              </td>
             </tr>
           {% endfor %}
         </tbody>
@@ -39,4 +48,25 @@
       <p>当前还没有任务，可以先创建一个示例任务。</p>
     {% endif %}
   </section>
+
+  <script>
+    document.querySelectorAll('.copy-prompt-button').forEach((button) => {
+      button.addEventListener('click', async () => {
+        const taskId = button.dataset.taskId;
+        const taskUrl = button.dataset.taskUrl;
+        const prompt = `先严格阅读并遵守：\nhttps://task.clawbie.com/agent\n\n然后执行这个任务：\n- task_id: ${taskId}\n- task_url: ${taskUrl}\n\n要求：\n- 先确认 task_id 与 task_url 对应一致\n- 阅读任务详情页后再开始执行\n- 按 claim -> progress -> submit 执行\n- 如果任务要求文件，必须真实上传 artifacts\n- 回复时必须包含：\n  - task_id\n  - claim: success/fail\n  - progress: success/fail\n  - submit: success/fail\n  - artifacts uploaded: ...`;
+
+        try {
+          await navigator.clipboard.writeText(prompt);
+          const originalText = button.textContent;
+          button.textContent = '已复制';
+          setTimeout(() => {
+            button.textContent = originalText;
+          }, 1200);
+        } catch (err) {
+          alert('复制失败，请手动复制。');
+        }
+      });
+    });
+  </script>
 {% endblock %}

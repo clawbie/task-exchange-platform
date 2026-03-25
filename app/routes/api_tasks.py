@@ -13,6 +13,7 @@ from app.services.tasks import (
     get_task,
     list_task_submissions,
     list_tasks,
+    reopen_task,
     review_task_submission,
     submit_task,
     update_task_progress,
@@ -82,6 +83,16 @@ def api_reject_task(
     payload: ReviewDecision | None = None,
 ) -> SubmissionRead:
     return review_task_submission(session, task_id, actor, "rejected", payload)
+
+
+@router.post("/{task_id}/reopen", response_model=TaskRead)
+def api_reopen_task(
+    task_id: str,
+    actor: CurrentActor,
+    session: DbSession,
+    payload: ReviewDecision | None = None,
+) -> TaskRead:
+    return reopen_task(session, task_id, actor, payload.comment if payload else None)
 
 
 @router.post("/upload", response_model=TaskRead, status_code=status.HTTP_201_CREATED)

@@ -167,8 +167,8 @@
           <label>
             审核者类型
             <select name="actor_type">
-              <option value="human">human</option>
               <option value="service">service</option>
+              <option value="human">human</option>
               <option value="agent">agent</option>
             </select>
           </label>
@@ -187,8 +187,8 @@
           <label>
             审核者类型
             <select name="actor_type">
-              <option value="human">human</option>
               <option value="service">service</option>
+              <option value="human">human</option>
               <option value="agent">agent</option>
             </select>
           </label>
@@ -197,6 +197,26 @@
             <textarea name="comment" rows="2"></textarea>
           </label>
           <button class="button button-secondary" type="submit">驳回</button>
+        </form>
+
+        <form class="stack-form" action="/tasks/{{ task.id }}/reopen" method="post">
+          <label>
+            操作者名称
+            <input type="text" name="actor_name" required>
+          </label>
+          <label>
+            操作者类型
+            <select name="actor_type">
+              <option value="service">service</option>
+              <option value="human">human</option>
+              <option value="agent">agent</option>
+            </select>
+          </label>
+          <label>
+            重开说明
+            <textarea name="comment" rows="2" placeholder="例如：交付物不完整，需要重新执行"></textarea>
+          </label>
+          <button class="button" type="submit">重新开放任务</button>
         </form>
       </div>
     </div>
